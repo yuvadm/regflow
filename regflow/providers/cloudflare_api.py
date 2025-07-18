@@ -163,3 +163,8 @@ class CloudflareAPI:
         """Get all DNS records for a zone"""
         result = self._make_request("GET", f"/zones/{zone_id}/dns_records")
         return result.get("result", [])
+
+    def zone_exists(self, domain: str) -> bool:
+        """Check if domain exists as a zone in Cloudflare"""
+        zone_info = self.get_zone_info(domain)
+        return zone_info is not None
