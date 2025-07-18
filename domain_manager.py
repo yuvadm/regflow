@@ -109,36 +109,25 @@ class DomainManager:
             # Step 5: Add domain to Cloudflare
             print(f"Adding {domain} to Cloudflare...")
             try:
-                # Check if we have a valid Cloudflare API token
-                if self.config.cloudflare_api_token == "your_cloudflare_api_token" or len(self.config.cloudflare_api_token) < 40:
-                    # Mock mode for testing without valid API token
-                    print("⚠ Using mock Cloudflare API (no valid token provided)")
-                    zone_id = f"mock_zone_id_{domain.replace('.', '_')}"
-                    nameservers = ["dana.ns.cloudflare.com", "noel.ns.cloudflare.com"]
-                    
-                    result['steps_completed'].append('cloudflare_zone_creation_mock')
-                    result['zone_id'] = zone_id
-                    print(f"✓ Domain added to Cloudflare (Mock Zone ID: {zone_id})")
-                    
-                    # Mock nameservers
-                    result['nameservers'] = nameservers
-                    print(f"✓ Cloudflare nameservers: {', '.join(nameservers)}")
-                else:
-                    zone_info = self.cloudflare.add_zone(domain)
-                    zone_id = zone_info['id']
-                    
-                    result['steps_completed'].append('cloudflare_zone_creation')
-                    result['zone_id'] = zone_id
-                    print(f"✓ Domain added to Cloudflare (Zone ID: {zone_id})")
-                    
-                    # Step 6: Get Cloudflare nameservers
-                    print("Getting Cloudflare nameservers...")
-                    nameservers = self.cloudflare.get_zone_nameservers(zone_id)
-                    
-                    result['nameservers'] = nameservers
-                    print(f"✓ Cloudflare nameservers: {', '.join(nameservers)}")
+                zone_info = self.cloudflare.add_zone(domain)
+                zone_id = zone_info['id']
+                
+                result['steps_completed'].append('cloudflare_zone_creation')
+                result['zone_id'] = zone_id
+                print(f"✓ Domain added to Cloudflare (Zone ID: {zone_id})")
             except Exception as e:
                 result['errors'].append(f"Failed to add domain to Cloudflare: {str(e)}")
+                return result
+            
+            # Step 6: Get Cloudflare nameservers
+            print("Getting Cloudflare nameservers...")
+            try:
+                nameservers = self.cloudflare.get_zone_nameservers(zone_id)
+                
+                result['nameservers'] = nameservers
+                print(f"✓ Cloudflare nameservers: {', '.join(nameservers)}")
+            except Exception as e:
+                result['errors'].append(f"Failed to get Cloudflare nameservers: {str(e)}")
                 return result
             
             # Step 7: Update nameservers in Namecheap
@@ -158,24 +147,14 @@ class DomainManager:
                 print(f"DRY RUN: Would update nameservers in Namecheap to: {', '.join(nameservers)}")
                 result['steps_completed'].append('nameserver_update_dry_run')
             
-            # Step 8: Set up basic DNS records
+            # Step 8: Set up basic DNS records (skip for now, empty DNS list)
             print("Setting up basic DNS records...")
             try:
-                if self.config.cloudflare_api_token == "your_cloudflare_api_token" or len(self.config.cloudflare_api_token) < 40:
-                    # Mock mode for DNS records
-                    print("⚠ Using mock DNS records (no valid token provided)")
-                    dns_records = [
-                        {'type': 'A', 'name': domain, 'content': '192.0.2.1', 'proxied': True},
-                        {'type': 'CNAME', 'name': f'www.{domain}', 'content': domain, 'proxied': True}
-                    ]
-                    result['dns_records'] = dns_records
-                    result['steps_completed'].append('basic_dns_setup_mock')
-                    print(f"✓ Basic DNS records created (mock)")
-                else:
-                    dns_records = self.cloudflare.setup_basic_dns_records(zone_id, domain)
-                    result['dns_records'] = dns_records
-                    result['steps_completed'].append('basic_dns_setup')
-                    print(f"✓ Basic DNS records created")
+                # For now, just create an empty DNS list as requested
+                dns_records = []
+                result['dns_records'] = dns_records
+                result['steps_completed'].append('basic_dns_setup')
+                print(f"✓ Basic DNS records ready (empty list as requested)")
             except Exception as e:
                 result['errors'].append(f"Failed to set up DNS records: {str(e)}")
                 return result
@@ -184,18 +163,10 @@ class DomainManager:
             if setup_workers:
                 print("Setting up worker subdomain...")
                 try:
-                    if self.config.cloudflare_api_token == "your_cloudflare_api_token" or len(self.config.cloudflare_api_token) < 40:
-                        # Mock mode for worker subdomain
-                        print("⚠ Using mock worker subdomain (no valid token provided)")
-                        worker_record = {'type': 'A', 'name': f'app.{domain}', 'content': '192.0.2.1', 'proxied': True}
-                        result['worker_record'] = worker_record
-                        result['steps_completed'].append('worker_subdomain_setup_mock')
-                        print(f"✓ Worker subdomain app.{domain} created (mock)")
-                    else:
-                        worker_record = self.cloudflare.create_worker_subdomain(zone_id, f"app.{domain}")
-                        result['worker_record'] = worker_record
-                        result['steps_completed'].append('worker_subdomain_setup')
-                        print(f"✓ Worker subdomain app.{domain} created")
+                    worker_record = self.cloudflare.create_worker_subdomain(zone_id, f"app.{domain}")
+                    result['worker_record'] = worker_record
+                    result['steps_completed'].append('worker_subdomain_setup')
+                    print(f"✓ Worker subdomain app.{domain} created")
                 except Exception as e:
                     result['errors'].append(f"Failed to set up worker subdomain: {str(e)}")
                     return result
