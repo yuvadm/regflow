@@ -3,8 +3,8 @@
 import sys
 from typing import Dict, Any, Optional
 from .config import Config
-from .providers.namecheap_api import NamecheapAPI
-from .providers.cloudflare_api import CloudflareAPI
+from .providers.namecheap import NamecheapAPI
+from .providers.cloudflare import CloudflareAPI
 
 
 class DomainManager:
@@ -54,7 +54,7 @@ class DomainManager:
                 # Check if nameservers match
                 cf_ns = set(status["nameservers"]["cloudflare"])
                 nc_ns = set(nc_nameservers)
-                
+
                 # Only consider nameservers matching if we have both sets and they match
                 if len(cf_ns) > 0 and len(nc_ns) > 0:
                     status["nameservers_match"] = cf_ns == nc_ns
@@ -108,9 +108,13 @@ class DomainManager:
         if len(nc_ns) == 0 and len(cf_ns) == 0:
             print("⚠ Cannot retrieve nameservers from either service")
         elif len(nc_ns) == 0:
-            print("⚠ Cannot retrieve Namecheap nameservers - unable to verify configuration")
+            print(
+                "⚠ Cannot retrieve Namecheap nameservers - unable to verify configuration"
+            )
         elif len(cf_ns) == 0:
-            print("⚠ Cannot retrieve Cloudflare nameservers - unable to verify configuration")
+            print(
+                "⚠ Cannot retrieve Cloudflare nameservers - unable to verify configuration"
+            )
         elif status["nameservers_match"]:
             print("✓ Nameservers are properly configured")
         else:

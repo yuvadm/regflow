@@ -167,15 +167,15 @@ class NamecheapAPI:
         try:
             # Get list of all domains in the account
             root = self._make_request("namecheap.domains.getList", {})
-            
+
             ns = {"ns": "http://api.namecheap.com/xml.response"}
-            
+
             # Look for the domain in the list
             for domain_elem in root.findall(".//ns:Domain", ns):
                 domain_name = domain_elem.get("Name")
                 if domain_name and domain_name.lower() == domain.lower():
                     return True
-            
+
             return False
         except Exception:
             # If API call fails, assume not registered
@@ -188,13 +188,13 @@ class NamecheapAPI:
 
             # Use getInfo to get domain details including nameservers
             root = self._make_request("namecheap.domains.getInfo", params)
-            
+
             ns = {"ns": "http://api.namecheap.com/xml.response"}
             nameservers = []
 
             # Look for nameservers in the domain info response
             # The structure might be different, let's check multiple possible locations
-            
+
             # Try to find nameservers in DnsDetails
             dns_details = root.find(".//ns:DnsDetails", ns)
             if dns_details is not None:
@@ -202,14 +202,14 @@ class NamecheapAPI:
                 for ns_elem in dns_details.findall(".//ns:Nameserver", ns):
                     if ns_elem.text:
                         nameservers.append(ns_elem.text)
-            
+
             # If no nameservers found in DnsDetails, try other locations
             if not nameservers:
                 # Try to find in different structure
                 for ns_elem in root.findall(".//ns:Nameserver", ns):
                     if ns_elem.text:
                         nameservers.append(ns_elem.text)
-            
+
             # If still no nameservers, check for attributes in the domain result
             if not nameservers:
                 domain_result = root.find(".//ns:DomainGetInfoResult", ns)
@@ -219,20 +219,23 @@ class NamecheapAPI:
                         ns_attr = domain_result.get(f"Nameserver{i}")
                         if ns_attr:
                             nameservers.append(ns_attr)
-                    
+
                     # Also check for DNS details in attributes
                     dns_type = domain_result.get("DnsProviderType")
                     if dns_type == "CUSTOM":
                         # For custom DNS, nameservers should be in the response
                         # Try looking for nameservers in different attribute names
                         for attr_name in domain_result.attrib:
-                            if "nameserver" in attr_name.lower() or "ns" in attr_name.lower():
+                            if (
+                                "nameserver" in attr_name.lower()
+                                or "ns" in attr_name.lower()
+                            ):
                                 ns_value = domain_result.get(attr_name)
                                 if ns_value and ns_value not in nameservers:
                                     nameservers.append(ns_value)
 
             return nameservers
-        except Exception as e:
+        except Exception:
             # For debugging, you might want to print the exception
             # print(f"Error getting nameservers for {domain}: {e}")
             return []
