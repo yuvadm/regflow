@@ -20,7 +20,7 @@ dev = [
 ]
 
 [project.scripts]
-regflow = "domain_manager:main"
+regflow = "regflow.domain_manager:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["."]
+packages = ["regflow"]

@@ -1,8 +1,8 @@
 import pytest
 import os
-from config import Config
-from namecheap_api import NamecheapAPI
-from cloudflare_api import CloudflareAPI
+from ..config import Config
+from ..providers.namecheap_api import NamecheapAPI
+from ..providers.cloudflare_api import CloudflareAPI
 
 
 @pytest.fixture
