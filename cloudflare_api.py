@@ -16,14 +16,31 @@ class CloudflareAPI:
         url = f"{self.base_url}{endpoint}"
         
         response = requests.request(method, url, headers=self.headers, json=data, timeout=30)
-        response.raise_for_status()
+        
+        try:
+            response.raise_for_status()
+        except requests.exceptions.HTTPError as e:
+            # Try to get the error details from the response
+            try:
+                error_details = response.json()
+                errors = error_details.get('errors', [])
+                if errors:
+                    error_msg = ', '.join([error.get('message', 'Unknown error') for error in errors])
+                    raise Exception(f"Cloudflare API Error: {error_msg}")
+                else:
+                    raise Exception(f"Cloudflare API Error: {response.status_code} - {response.text}")
+            except ValueError:
+                raise Exception(f"Cloudflare API Error: {response.status_code} - {response.text}")
         
         result = response.json()
         
         if not result.get('success', False):
             errors = result.get('errors', [])
-            error_msg = ', '.join([error.get('message', 'Unknown error') for error in errors])
-            raise Exception(f"Cloudflare API Error: {error_msg}")
+            if errors:
+                error_msg = ', '.join([error.get('message', 'Unknown error') for error in errors])
+                raise Exception(f"Cloudflare API Error: {error_msg}")
+            else:
+                raise Exception(f"Cloudflare API Error: Request failed but no error details provided")
         
         return result
     
