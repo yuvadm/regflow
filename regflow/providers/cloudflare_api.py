@@ -24,7 +24,7 @@ class CloudflareAPI:
 
         try:
             response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
+        except requests.exceptions.HTTPError:
             # Try to get the error details from the response
             try:
                 error_details = response.json()
@@ -54,7 +54,7 @@ class CloudflareAPI:
                 raise Exception(f"Cloudflare API Error: {error_msg}")
             else:
                 raise Exception(
-                    f"Cloudflare API Error: Request failed but no error details provided"
+                    "Cloudflare API Error: Request failed but no error details provided"
                 )
 
         return result

@@ -1,5 +1,4 @@
 import pytest
-import os
 from ..config import Config
 from ..providers.namecheap_api import NamecheapAPI
 from ..providers.cloudflare_api import CloudflareAPI
@@ -34,8 +33,12 @@ def test_namecheap_credentials_loaded(config):
 def test_cloudflare_credentials_loaded(config):
     """Test that Cloudflare credentials are loaded"""
     assert config.cloudflare_api_token, "Cloudflare API token not found"
-    assert config.cloudflare_api_token != "your_cloudflare_api_token", "Cloudflare API token is placeholder"
-    assert len(config.cloudflare_api_token) == 40, f"Cloudflare API token should be 40 chars, got {len(config.cloudflare_api_token)}"
+    assert config.cloudflare_api_token != "your_cloudflare_api_token", (
+        "Cloudflare API token is placeholder"
+    )
+    assert len(config.cloudflare_api_token) == 40, (
+        f"Cloudflare API token should be 40 chars, got {len(config.cloudflare_api_token)}"
+    )
 
 
 def test_namecheap_domain_availability(namecheap_api):
@@ -73,7 +76,7 @@ def test_cloudflare_list_zones(cloudflare_api):
     """Test listing Cloudflare zones"""
     zones = cloudflare_api.list_zones()
     assert isinstance(zones, list), "Zones should be a list"
-    
+
     if zones:
         zone = zones[0]
         assert "id" in zone, "Zone should have 'id' field"
@@ -83,11 +86,11 @@ def test_cloudflare_list_zones(cloudflare_api):
 def test_cloudflare_zone_info(cloudflare_api):
     """Test getting zone information"""
     zones = cloudflare_api.list_zones()
-    
+
     if zones:
         zone_name = zones[0]["name"]
         zone_info = cloudflare_api.get_zone_info(zone_name)
-        
+
         assert zone_info is not None, "Zone info should not be None"
         assert zone_info["name"] == zone_name, "Zone name should match"
         assert "id" in zone_info, "Zone info should have 'id' field"
@@ -96,14 +99,14 @@ def test_cloudflare_zone_info(cloudflare_api):
 def test_cloudflare_nameservers(cloudflare_api):
     """Test getting zone nameservers"""
     zones = cloudflare_api.list_zones()
-    
+
     if zones:
         zone_id = zones[0]["id"]
         nameservers = cloudflare_api.get_zone_nameservers(zone_id)
-        
+
         assert isinstance(nameservers, list), "Nameservers should be a list"
         assert len(nameservers) > 0, "Should have at least one nameserver"
-        
+
         for ns in nameservers:
             assert isinstance(ns, str), "Nameserver should be a string"
             assert "cloudflare.com" in ns, "Nameserver should be from Cloudflare"
@@ -112,13 +115,13 @@ def test_cloudflare_nameservers(cloudflare_api):
 def test_cloudflare_dns_records(cloudflare_api):
     """Test getting DNS records"""
     zones = cloudflare_api.list_zones()
-    
+
     if zones:
         zone_id = zones[0]["id"]
         records = cloudflare_api.get_zone_dns_records(zone_id)
-        
+
         assert isinstance(records, list), "DNS records should be a list"
-        
+
         if records:
             record = records[0]
             assert "type" in record, "Record should have 'type' field"

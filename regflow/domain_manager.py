@@ -69,14 +69,14 @@ class DomainManager:
                 print(f"✓ Pricing: ${pricing['register']:.2f}, Balance: ${balance:.2f}")
 
                 # Step 3: User confirmation with multiple safeguards
-                print(f"\n" + "=" * 50)
-                print(f"DOMAIN REGISTRATION CONFIRMATION")
-                print(f"=" * 50)
+                print("\n" + "=" * 50)
+                print("DOMAIN REGISTRATION CONFIRMATION")
+                print("=" * 50)
                 print(f"Domain: {domain}")
                 print(f"Registration Price: ${pricing['register']:.2f}")
                 print(f"Account Balance: ${balance:.2f}")
                 print(f"Remaining Balance: ${balance - pricing['register']:.2f}")
-                print(f"=" * 50)
+                print("=" * 50)
 
                 # Multiple confirmation steps to prevent accidents
                 print(
@@ -150,7 +150,7 @@ class DomainManager:
 
             # Step 7: Update nameservers in Namecheap
             if not dry_run:
-                print(f"Updating nameservers in Namecheap...")
+                print("Updating nameservers in Namecheap...")
                 try:
                     if not self.namecheap.set_dns_servers(domain, nameservers):
                         result["errors"].append(
@@ -159,7 +159,7 @@ class DomainManager:
                         return result
 
                     result["steps_completed"].append("nameserver_update")
-                    print(f"✓ Nameservers updated in Namecheap")
+                    print("✓ Nameservers updated in Namecheap")
                 except Exception as e:
                     result["errors"].append(
                         f"Failed to update nameservers in Namecheap: {str(e)}"
@@ -178,7 +178,7 @@ class DomainManager:
                 dns_records = []
                 result["dns_records"] = dns_records
                 result["steps_completed"].append("basic_dns_setup")
-                print(f"✓ Basic DNS records ready (empty list as requested)")
+                print("✓ Basic DNS records ready (empty list as requested)")
             except Exception as e:
                 result["errors"].append(f"Failed to set up DNS records: {str(e)}")
                 return result
@@ -266,7 +266,7 @@ def main():
     if result.get("success"):
         print(f"\nSuccess! Domain {domain} is ready for use.")
     else:
-        print(f"\nErrors occurred:")
+        print("\nErrors occurred:")
         for error in result.get("errors", []):
             print(f"  - {error}")
         sys.exit(1)
