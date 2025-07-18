@@ -7,10 +7,9 @@ from namecheap_api import NamecheapAPI
 from cloudflare_api import CloudflareAPI
 
 class DomainManager:
-    def __init__(self, config: Config, sandbox: bool = False):
+    def __init__(self, config: Config):
         self.config = config
-        self.sandbox = sandbox
-        self.namecheap = NamecheapAPI(config, sandbox=sandbox)
+        self.namecheap = NamecheapAPI(config)
         self.cloudflare = CloudflareAPI(config)
     
     def register_and_setup_domain(self, domain: str, 
@@ -169,12 +168,11 @@ class DomainManager:
 
 def main():
     if len(sys.argv) < 2:
-        print("Usage: python domain_manager.py <domain> [--dry-run] [--sandbox]")
+        print("Usage: python domain_manager.py <domain> [--dry-run]")
         sys.exit(1)
     
     domain = sys.argv[1]
     dry_run = '--dry-run' in sys.argv
-    sandbox = '--sandbox' in sys.argv
     
     # Load configuration
     config = Config.from_env()
@@ -192,11 +190,9 @@ def main():
         sys.exit(1)
     
     # Initialize domain manager
-    manager = DomainManager(config, sandbox=sandbox)
+    manager = DomainManager(config)
     
     # Register and setup domain
-    if sandbox:
-        print("Running in SANDBOX mode - using Namecheap sandbox environment")
     if dry_run:
         print("Running in DRY RUN mode - no actual registration will occur")
     result = manager.register_and_setup_domain(domain, dry_run=dry_run)

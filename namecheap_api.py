@@ -4,10 +4,9 @@ from typing import Dict, Any, Optional
 from config import Config
 
 class NamecheapAPI:
-    def __init__(self, config: Config, sandbox: bool = False):
+    def __init__(self, config: Config):
         self.config = config
-        self.sandbox = sandbox
-        self.base_url = "https://api.sandbox.namecheap.com/xml.response" if sandbox else "https://api.namecheap.com/xml.response"
+        self.base_url = "https://api.namecheap.com/xml.response"
     
     def _make_request(self, command: str, params: Dict[str, Any]) -> ET.Element:
         """Make a request to Namecheap API"""
